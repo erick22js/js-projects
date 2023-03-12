@@ -1,0 +1,84 @@
+<html>
+	<head>
+		<style>
+			
+			body{
+				font-family: monospace;
+				font-size: 20px;
+			}
+			
+			label{
+				font-weight: bold;
+				padding-left: 10px;
+				padding-right: 10px;
+			}
+			
+			.entry{
+				width: 40px;
+				height: 1.5em;
+				font-size: 20px;
+			}
+			
+		</style>
+	</head>
+	<body style="overflow-y:hidden;">
+		
+		<canvas id="display" width="320" height="144" style="border:1px solid black; width:640px; height:288px; image-rendering:pixelated;"></canvas>
+		
+		<h3 id="stdoutc" style="white-space:pre;">Ctrl+B for open Rom file</h3>
+		
+		<div style="border:1px solid black; width:640px; height:320px; overflow-y:scroll; overflow-x:hidden;">
+			
+			<br/>
+			
+			<div style="display:flex;">
+				<div style="width:80px; height:120px; overflow:hidden;">
+					
+					<label>A</label><input class="entry" value="00"/>
+					<br/>
+					<label>B</label><input class="entry" value="00"/>
+					<br/>
+					<label>D</label><input class="entry" value="00"/>
+					<br/>
+					<label>H</label><input class="entry" value="00"/>
+					
+				</div>
+				<div style="width:80px; height:120px; overflow:hidden;">
+					
+					<label>F</label><input class="entry" value="00"/>
+					<br/>
+					<label>C</label><input class="entry" value="00"/>
+					<br/>
+					<label>E</label><input class="entry" value="00"/>
+					<br/>
+					<label>L</label><input class="entry" value="00"/>
+					
+				</div>
+			</div>
+			
+			<h3 id="stdout" style="white-space:pre; max-width:100%;">STDOUT</h3>
+			
+		</div>
+		
+		<script src="js/ui.js"></script>
+		<script src="js/display.js"></script>
+		<script src="js/video.js"></script>
+		<script src="js/input.js"></script>
+		<script src="js/memory.js"></script>
+		<script src="js/dma.js"></script>
+		<script src="js/timer.js"></script>
+		<script src="js/control.js"></script>
+		<script src="js/debug.js"></script>
+		<script src="js/opcodes.json"></script>
+		<script src="js/instruction.js"></script>
+		<script src="js/prefixed.js"></script>
+		<script src="js/alu.js"></script>
+		<script src="js/cpu.js"></script>
+		<script src="js/system.js"></script>
+		<script src="js/cart.js"></script>
+		<script src="js/romboot.js"></script>
+		<script src="js/romtest.js"></script>
+		<script src="js/main.js"></script>
+		
+	</body>
+</html>
