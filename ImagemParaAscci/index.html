@@ -1,0 +1,16 @@
+<html>
+	<body>
+		<textarea id="ascciCanvas" style="font-size:3px; width:680px; height:680px; white-space:nowrap;spell-check:none; font-family:monospace"></textarea>
+		<div>
+			<input type="file" onchange="getImage(this)" style=""></input>
+			<button onclick="
+				charPal=prompt('Change palette',charPal)||charPal;
+				ascciImage(prevImg);
+				">Palette</button>
+			<button onclick="acCv.style.width = acCv.style.height = (prompt('Change frame size',acCv.style.width)||acCv.style.width);" >Frame scale</button>
+			<button onclick="acCv.style.fontSize = (prompt('Change font size',acCv.style.fontSize)||acCv.style.fontSize);" >Font scale</button>
+		</div>
+		<img id="preview" src="#"></img>
+		<script src="main.js"></script>
+	</body>
+</html>
