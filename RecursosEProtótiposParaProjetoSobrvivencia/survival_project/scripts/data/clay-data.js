@@ -1,0 +1,61 @@
+
+const CLAYCRAFT = {
+	"clay":{
+		"clayDefault":{
+			actions:["roll","mash"],
+			roll:{result:"clayUppered"},
+			mash:{result:"clayIndented"}
+		},
+		"clayIndented":{
+			actions:["roll"],
+			roll:{result:"clayDefault"}
+		},
+		"clayUppered":{
+			actions:["roll","mash","cut","retouch"],
+			roll:{result:"clayHighUppered"},
+			mash:{result:"clayIndented"},
+			cut:{result:"clayUpperedCutted"},
+			retouch:{result:"clayPot"}
+		},
+		"clayUpperedCutted":{
+			actions:["roll","retouch"],
+			roll:{result:"clayHighUpperedCutted"},
+			retouch:{result:"clayBowl"}
+		},
+		"clayHighUppered":{
+			actions:["mash","cut","retouch"],
+			cut:{result:"clayHighUpperedCutted"},
+			mash:{result:"clayUppered"},
+			retouch:{result:"clayJar"}
+		},
+		"clayHighUpperedCutted":{
+			actions:["mash","retouch"],
+			mash:{result:"clayUpperedCutted"},
+			retouch:{result:"clayCup"}
+		},
+		"clayPot":{
+			actions:["mash"],
+			mash:{result:"clayDefault"},
+			giveOnDry:["clayPot",1,1,{container:[["empty",0,0],["empty",0,0],["empty",0,0],["empty",0,0],["empty",0,0]]}]
+		},
+		"clayJar":{
+			actions:["mash"],
+			mash:{result:"clayDefault"},
+			giveOnDry:["clayJar",1,1,{}]
+		},
+		"clayBowl":{
+			actions:["mash"],
+			mash:{result:"clayUpperedCutted"},
+			giveOnDry:["clayBowl",1,1,{}]
+		},
+		"clayCup":{
+			actions:["mash"],
+			mash:{result:"clayUpperedCutted"},
+			giveOnDry:["clayCup",1,1,{}]
+		}
+	}
+}
+
+function getClayTexture(block, dry){
+	return ClayStrip[block[3].stage+(dry?"Dry":"")]||ClayStrip["clayDefault"+(dry?"Dry":"")];
+}
