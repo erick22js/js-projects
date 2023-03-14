@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+	</head>
+	<style type="text/css">
+		.iconL{
+			position:absolute;
+			left: 0%;
+			width: 8%;
+			height: 12%;
+			image-rendering: pixelated;
+		}
+		.iconR{
+			position:absolute;
+			left: 88%;
+			width: 8%;
+			height: 12%;
+			image-rendering: pixelated;
+		}
+		.icon{
+			position:absolute;
+			width: 8%;
+			height: 12%;
+			image-rendering: pixelated;
+		}
+		.window{
+			position:absolute;
+			width: 96%;
+			height: 94%;
+			border: 1px solid black;
+			background-color: white;
+		}
+		.freely{
+			position: absolute;
+			border: 1px solid black;
+			overflow-y: scroll;
+			overflow-x: hidden;
+		}
+		.option{
+			width:100%;
+		}
+		h4{
+			height:0%;
+		}
+	</style>
+	<body style="background-color:#474">
+		<div style="
+			border: 1px solid black;
+			position: absolute;
+			left: 10%;
+			top: 2%;
+			width: 78%;
+			height: 96%;
+		">
+			<canvas id="editLayer"
+			width="352" height="256"
+			style="
+				background-color: #777;
+				image-rendering: pixelated;
+				position: absolute;
+				left: 0%;
+				top: 0%;
+				width: 100%;
+				height: 100%;
+			"></canvas>
+		</div>
+		<!--Ícones de alteração-->
+		<img id="ic_hand" onclick="setAction(this,'hand')" class="iconL" width="32" height="32" src="../img/hand.png" style="top:1%;"></img>
+		<img id="ic_move" onclick="setAction(this,'move')" class="iconL" width="32" height="32" src="../img/move.png" style="top:16%;"></img>
+		<img id="ic_penc" onclick="setAction(this,'pencil')" class="iconL" width="32" height="32" src="../img/pen.png" style="top:31%;"></img>
+		<img id="ic_ersr" onclick="setAction(this,'eraser')" class="iconL" width="32" height="32" src="../img/eraser.png" style="top:46%;"></img>
+		<img id="ic_pick" onclick="setAction(this,'picker')" class="iconL" width="32" height="32" src="../img/picker.png" style="top:61%;"></img>
+		<img id="ic_slct" onclick="setAction(this,'select')" class="iconL" width="32" height="32" src="../img/select.png" style="top:76%;"></img>
+		
+		<button onclick="SaveImage();" style="position:absolute; left:89%; top:5%; width:9%; height:9%;">save</button>
+		<img id="ic_pxat" onclick="togglePixelPrecision()" class="icon" width="32" height="32" src="../img/pixel_art.png" style="left:89%; top:16%;"></img>
+		<img id="ic_pnsz" class="icon" width="32" height="32" src="../img/pen_size.png" style="left:89%; top:31%;"></img>
+		<select oninput="setBrushSize(Number(this.value))" style="opacity:0; position:absolute; left:89%; top:31%; width:8%; height:12%;">
+			<option value="1">1px</option>
+			<option value="1.5">1.5px</option>
+			<option value="2">2px</option>
+			<option value="2.5">2.5px</option>
+			<option value="3">3px</option>
+			<option value="4">4px</option>
+			<option value="5">5px</option>
+			<option value="6">6px</option>
+			<option value="8">8px</option>
+			<option value="10">10px</option>
+		</select>
+		
+		<div id="paletteP" style="
+			background-color:#f00;
+			border: .5em solid black;
+			position:absolute;
+			left:89%; top:46%;
+			width:7%; height:12%;
+		" onclick="pickColor(this.style.backgroundColor, function(e){paletteP.style.backgroundColor=e; Tr.colorPen=e})"></div>
+		
+		<h4 id="debug" style="position:absolute; left:0%; top:-4%; white-space:pre;">Oie</h4>
+		
+	</body>
+	<script src="../js/touch-library.js"></script>
+	<script src="../js/color-picker.js"></script>
+	<script src="main.js"></script>
+</html>

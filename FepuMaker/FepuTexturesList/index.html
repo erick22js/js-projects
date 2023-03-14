@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<style type="text/css">
+			
+		</style>
+	</head>
+	<body>
+		<div id="ctWin" style="
+			position:absolute;
+			background-color:green;
+			width:100%; height:100%;
+			left:-101%; top:0%;
+			z-index:1;
+		">
+			<h4>Texture name</h4>
+			<input type="text" id="TexName"></input>
+			<h4>Texture width</h4>
+			<input type="number" id="TexName" onchange="this.value=isNaN(this.value)?0:~~Number(this.value);"></input>
+			<h4>Texture height</h4>
+			<input type="number" id="TexName" onchange="this.value=isNaN(this.value)?0:~~Number(this.value);"></input>
+			<button >Criar textura</button>
+		</div>
+	</body>
+	<script src="../js/IO-fallback.js"></script>
+	<script src="../js/fepu-xplorer.js"></script>
+	<script src="../js/fepu-project.js"></script>
+	<script src="../js/fepu-obj-picker.js"></script>
+	<script src="main.js"></script>
+	<script src="creatorOpts.js"></script>
+</html>

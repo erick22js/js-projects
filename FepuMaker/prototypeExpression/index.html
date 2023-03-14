@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+	</head>
+	<body>
+		<h4 id="debug" style="white-space:pre;">Debug</h4>
+	</body>
+	<script src="../js/fepu-expression.js"></script>
+	<script type="text/javascript">
+		var expr = new FepuExpression();
+		expr.implemmentMethods([
+		"var PI = "+Math.PI,
+		"var E = "+Math.E,
+		"var min = function(e){return e}",
+		"var max = function(e){return e}",
+		"var random = function(){return 0}",
+		"var sqrt = function(){}",
+		"var sin = function(e){return e}",
+		"var cos = function(e){return e}",
+		"var tan = function(e){return e}",
+		]);
+		//expr.compileStr("E", function(e){alert(e)}, function(e, r){alert(r)});
+		alert((typeof ("")));
+		//alert(Math.PI);
+	</script>
+</html>

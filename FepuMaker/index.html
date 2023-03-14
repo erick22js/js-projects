@@ -1,0 +1,64 @@
+<html>
+	<body style="overflow:hidden;">
+		
+		<script src="js/3d/twgl-full.js"></script>
+		<script src="js/3d/matrix.js"></script>
+		<script src="js/3d/vector.js"></script>
+		
+		<script src="js/util.js"></script>
+		<script src="js/touch-library.js"></script>
+		
+		<!--3D Layer-->
+        <canvas
+            id="Tela"
+            width="800"
+            height="480"
+            style="
+            	position: absolute;
+            	left:0%; top:0%;
+            	width:100%; height:100%;
+            "
+            ></canvas>
+		<!--UI Layer-->
+		<canvas
+			id="UI"
+			width="800"
+			height="480"
+			style="
+				position: absolute;
+				left:0%; top:0%;
+				width:100%; height:100%;
+			"
+			></canvas>
+		<script type="shader" id="vertSh">
+attribute vec3 position;
+attribute vec3 uv;
+
+uniform mat4 wMatrix;
+
+varying vec2 uvs;
+void main(){
+	uvs = uv.xy;
+	gl_Position = wMatrix*vec4(position, 1.0);
+}
+		</script>
+		<script type="shader" id="fragSh">
+precision mediump float;
+uniform sampler2D text;
+
+varying vec2 uvs;
+void main(){
+	vec4 tc = texture2D(text, uvs);
+	gl_FragColor = tc;//vec4(1.0, 0.0, 0.0, 1.0);
+}
+		</script>
+		
+		<script src="js/FepuCore/models.js"></script>
+		<script src="js/FepuCore/renderer.js"></script>
+		<script src="FepuEngine/BspRenderer.js"></script>
+		<script src="js/FepuCore/uidrawer.js"></script>
+		<script src="js/FepuCore/gameData.js"></script>
+        <script src="js/main.js"></script>
+
+    </body>
+</html>
