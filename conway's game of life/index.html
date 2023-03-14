@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+</head>
+<style type="text/css">
+	*{
+		font-size:25px
+	}
+</style>
+<body>
+
+<canvas id="cv" width="256" height="256" style="border:1px solid black; image-rendering: pixelated;"></canvas>
+<br>
+<button onclick="zoom*=2;redraw()">+</button><button onclick="zoom/=2;redraw()">-</button>
+<select id="toolB">
+	<option value="mover">Mover</option>
+	<option value="live">Desenhar</option>
+	<option value="blank">Apagar</option>
+</select>
+<br>
+<input type="checkbox" style="width:25px;height:25px" checked="true" onchange="showGrid=this.checked; redraw()">ativar grade</input>
+<br>
+<input type="checkbox" style="width:25px;height:25px" checked="true" onchange="travellableScreen=this.checked;">ativar travessia de tela</input>
+<br>
+<button id="toggleB" onclick="toggleState()">Iniciar</button>
+<br>
+<button onclick="abortRun()">Recomeçar</button>
+
+<script src="main.js"></script>
+
+</body>
+</html>
