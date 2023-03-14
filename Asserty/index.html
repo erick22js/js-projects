@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<head>
+<title></title>
+</head>
+<body>
+
+<textarea id="editor" style="width:340px; height:340px; font-size:12px; font-family:monospace;"></textarea>
+<button onclick="code = compileAsr(editor.value)">Compile</button>
+<button onclick="
+machine.cpu.loadRom(code);
+machine.cpu.reset();
+doin()
+">Execute</button>
+<button onclick="saveFile('out.ot', code)">Exportar</button>
+<h4 id="dbg">dbg</h4>
+<textarea id="output" disabled="false" style="width:340px; height:340px; font-size:12px; font-family:monospace;"></textarea>
+
+<script src="iobyte.js"></script>
+<script src="Asserty.js"></script>
+<script src="AssertyCompiler.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
