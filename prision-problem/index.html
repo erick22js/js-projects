@@ -1,0 +1,85 @@
+<html>
+	<head>
+		
+	</head>
+	<body>
+		
+		<h2 id="out">Saida</h2>
+		
+		<script>
+			
+			function runSimulation(prisionersQtd, allowedQtd){
+				var list = [];
+				var pre = [];
+				
+				/* Scrambles the list */
+				for(var i=0; i<prisionersQtd; i++){
+					pre.push(i);
+				}
+				for(var i=0; i<prisionersQtd; i++){
+					list.push([false, pre.splice(Math.floor(Math.random()*pre.length), 1)[0]]);
+				}
+				
+				/* Do for each prisioner */
+				prisionertime: for(var pi=0; pi<prisionersQtd; pi++){
+					for(var i=0; i<prisionersQtd; i++){
+						list[i][0] = false;
+					}
+					
+					var next = pi;
+					for(var t=0; t<allowedQtd; t++){
+						var getted = list[next][1];
+						// The current box was already been visited
+						if(list[next][0]){
+							// Iterates next boxes until find a empty cycling
+							var act = next+1;
+							for(;act!=next; act++, act%=prisionersQtd){
+								if(!list[next][0]){
+									next = act;
+								}
+							}
+							// This time do not account, because the current box was already visited
+							t--;
+						}
+						// The box is intact
+						else{
+							// If the prisionerr has found his number asign
+							if(getted==pi){
+								continue prisionertime;
+							}
+							// Else, marks as visited box, and redirects
+							list[next][0] = true;
+							next = getted;
+						}
+					}
+					
+					return false;
+				}
+				
+				return true;
+			}
+			
+			/* Run some simulations for statistcs analyze */
+			var wins = 0;
+			var looses = 0;
+			var total = 10000;
+			for(var s=0; s<total; s++){
+				var res = runSimulation(100, 50);
+				if(res){
+					wins++;
+				}
+				else{
+					looses++;
+				}
+			}
+			
+			out.innerHTML = 
+				"Wins: "+wins+"<br/>"+
+				"Looses: "+looses+"<br/>"+
+				"Total: "+total+"<br/>"+
+				"Wins Percentual: "+((wins/total)*100).toFixed(4);
+			
+		</script>
+		
+	</body>
+</html>

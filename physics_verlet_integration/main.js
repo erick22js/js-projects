@@ -1,6 +1,6 @@
 var g_scl = 1;
 
-const g_acc = new Vector(0, 200);
+const g_acc = new Vector(0, 400);
 
 
 function Point(x=0, y=0, vx=0, vy=0, mass=1, pinned=false){
@@ -26,20 +26,21 @@ function Point(x=0, y=0, vx=0, vy=0, mass=1, pinned=false){
 	}
 	
 	self.constraint = function(){
+		var wd = 0.7;
 		if(self.pos.y>height*g_scl){
-			self.old_pos.y = height + (self.pos.y-self.old_pos.y);
+			self.old_pos.y = height + (self.pos.y-self.old_pos.y)*wd;
 			self.pos.y = height;
 		}
 		if(self.pos.y<0){
-			self.old_pos.y = self.pos.y-self.old_pos.y;
+			self.old_pos.y = (self.pos.y-self.old_pos.y)*wd;
 			self.pos.y = 0;
 		}
 		if(self.pos.x>=width*g_scl){
-			self.old_pos.x = width + (self.pos.x-self.old_pos.x);
+			self.old_pos.x = width + (self.pos.x-self.old_pos.x)*wd;
 			self.pos.x = width;
 		}
 		if(self.pos.x<0){
-			self.old_pos.x = self.pos.x-self.old_pos.x;
+			self.old_pos.x = (self.pos.x-self.old_pos.x)*wd;
 			self.pos.x = 0;
 		}
 	}
@@ -98,7 +99,7 @@ const points = [
 
 for(var y=10; y<=250; y+=10){
 	for(var x=10; x<=490; x+=10){
-		points.push(new Point(x, y, 0, 0, 4, y==10));
+		points.push(new Point(x, y, 0, 0, 4, x==10||x==490));
 	}
 }
 
@@ -125,6 +126,8 @@ App.start = function(){
 
 App.update = function(dt){
 	clearScreen();
+	
+	//g_acc.x = 700+Math.random()*500;
 	
 	/* Updates the points on screen */
 	for(var i=0; i<points.length; i++){
