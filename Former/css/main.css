@@ -1,0 +1,174 @@
+
+body{
+	overflow-x: hidden;
+	overflow-y: auto;
+	font-family: Arial;
+}
+
+file{
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+separator{
+	margin-left: -10%;
+	margin-top: 70pt;
+	margin-bottom: 30pt;
+	height: 3pt;
+	width: 120%;
+	border: 3pt solid black;
+    display: flex;
+}
+
+center{
+	margin-top: 20pt;
+	margin-bottom: 50pt;
+	font-size: 30pt;
+	text-decoration: underline overline;
+}
+
+section{
+	margin-top: 15pt;
+	margin-left: 10pt;
+	margin-right: 10pt;
+	margin-bottom: 5pt;
+	padding-top: 5pt;
+	padding-bottom: 15pt;
+	border: 2pt solid #88F;
+	display: flex;
+	flex-direction: column;
+	
+	box-shadow: 2pt 2pt 10pt #88F;
+}
+
+space{
+	height: 20pt;
+}
+
+split{
+	min-width: 100%;
+	height: 0pt;
+	border: 1pt solid #88F;
+	margin-top: 15pt;
+	margin-bottom: 25pt;
+	
+	box-shadow: 0px 0pt 5pt #88F;
+}
+
+class-name{
+	margin-left: 10pt;
+	margin-right: 10pt;
+	height: 50pt;
+	width: 100%;
+	line-height: 50pt;
+	font-size: 25pt;
+	font-weight: bold;
+	color: #88F;
+}
+
+inherit-text{
+	margin-left: 10pt;
+	margin-right: 10pt;
+	padding-bottom: 15pt;
+	height: 20pt;
+	width: 100%;
+	line-height: 20pt;
+	font-size: 13pt;
+	color: #88F;
+}
+
+inherit-text a{
+	font-weight: bold;
+}
+
+inherit-class{
+	font-weight: bold;
+}
+
+topic{
+	margin-left: 10pt;
+	margin-right: 10pt;
+	height: 30pt;
+	width: 100%;
+	line-height: 30pt;
+	font-size: 20pt;
+	font-weight: bold;
+}
+
+symbol{
+	margin-top: 15pt;
+	margin-left: 10pt;
+	margin-right: 10pt;
+	width: 100%;
+	line-height: 30pt;
+	font-size: 15pt;
+	color: #555;
+	font-style: italic;
+}
+
+symbol type{
+	margin-right: 8pt;
+	color: #F00;
+	font-style: italic;
+}
+
+symbol typedef{
+	margin-right: 8pt;
+	color: #80F;
+	font-style: italic;
+}
+
+symbol class{
+	margin-right: 8pt;
+	color: #00F;
+	font-style: italic;
+}
+
+parameter{
+	margin-top: 2pt;
+	padding-left: 30pt;
+	padding-right: 10pt;
+	margin-bottom: 2pt;
+	width: 100%;
+	line-height: 20pt;
+	font-size: 13pt;
+	color: #555;
+	font-style: italic;
+}
+
+parameter type{
+	margin-right: 8pt;
+	color: #F00;
+	font-style: italic;
+}
+
+parameter typedef{
+	margin-right: 8pt;
+	color: #80F;
+	font-style: italic;
+}
+
+parameter class{
+	margin-right: 8pt;
+	font-weight: bold;
+	color: #00F;
+	font-style: italic;
+}
+
+value{
+	color: #A00;
+	font-style: normal;
+}
+
+a{
+	color: inherit;
+}
+
+description{
+	margin-top: 5pt;
+	margin-left: 10pt;
+	margin-right: 10pt;
+	font-size: 10pt;
+	color: black;
+}
