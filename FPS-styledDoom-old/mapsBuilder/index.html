@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+</head>
+<body style="overflow:hidden;">
+
+    <canvas id="cv" width="512" height="512" style="width:512px; height:512px; left:0px; top:0px; position:absolute; border:2px solid black; image-rendering:pixelated;"></canvas>
+    <canvas id="cvH" width="256" height="512" style="width:261px; height:512px; left:512px; top:0px; position:absolute; border:2px solid black; image-rendering:pixelated;"></canvas>
+
+    <input id="textureLoader" type="file" accept=".png" style="left:0px; top:528px; position:absolute" multiple oninput="alert(JSON.stringify(this.value))"></input>
+    <button onclick="if (textureLoaderInput.files.length) createTexturePack();else alert('Selecione imagens')" style="left:0px; top:560px; position:absolute">Gerar pacote de texturas</button>
+
+    <button onclick="exportTexturePack(prompt('Digite o nome:','myPack')) " style="left:0px; top:588px; position:absolute">Exportar pacote de textura</button>
+    <button onclick="importTexturePack(prompt('Digite o nome:','myPack'))" style="left:188px; top:588px; position:absolute">Importar pacote de textura</button>
+
+    <h3 id="dbg" style="top:-20px; left:778px; position:absolute">debug</h3>
+    <input id="sectorId" value="" placeholder="ID de setor" disabled style="left:778px; top:150px; position:absolute"></input>
+    <input id="isSidedef" type="checkbox" disabled style="left:778px; top:180px; position:absolute"><h4 style="left:808px; top:160px; position:absolute">Ligação entre setores</h4></input>
+    <input id="colision" type="checkbox" disabled style="left:778px; top:210px; position:absolute" oninput="refObject.barrier = this.checked"><h4 style="left:808px; top:190px; position:absolute">É uma barreira</h4></input>
+    <input id="texIUpper" value="" type="number" placeholder="ID de textura superior" disabled style="left:778px; top:240px; position:absolute" onchange="refObject.textureU = Number(this.value)"></input>
+    <input id="texIMiddle" value="" type="number" placeholder="ID de textura central" disabled style="left:778px; top:270px; position:absolute" onchange="refObject.textureM = Number(this.value)"></input>
+    <input id="texIDown" value="" type="number" placeholder="ID de textura inferior" disabled style="left:778px; top:300px; position:absolute" onchange="refObject.textureD = Number(this.value)"></input>
+    <input id="texX" value="" type="number" placeholder="Textura X" disabled style="left:778px; top:330px; width:85px; position:absolute" onchange="refObject.textureX=Number(this.value)"></input>
+    <input id="texY" value="" type="number" placeholder="Textura Y" disabled style="left:863px; top:330px; width:85px; position:absolute" onchange="refObject.textureY=Number(this.value)"></input>
+    <h4 style="left:778px; top:340px; position:absolute">Cor de ambiente</h4>
+    <input id="red" value="" type="number" placeholder="red" disabled style="left:778px; top:390px; width:50px; position:absolute" onchange="refObject.color[0]=Number(this.value)"></input>
+    <input id="green" value="" type="number" placeholder="green" disabled style="left:838px; top:390px; width:50px; position:absolute" onchange="refObject.color[1]=Number(this.value)"></input>
+    <input id="blue" value="" type="number" placeholder="blue" disabled style="left:898px; top:390px; width:50px; position:absolute" onchange="refObject.color[2]=Number(this.value)"></input>
+    <input id="floorY" value="" type="number" placeholder="Altura de chão" disabled style="left:778px; top:420px; position:absolute" onchange="refObject.floorY=Number(this.value)"></input>
+    <input id="ceilY" value="" type="number" placeholder="Altura de teto" disabled style="left:778px; top:450px; position:absolute" onchange="refObject.ceilY=Number(this.value)"></input>
+    <script src="raster.js"></script>
+    <script src="main.js"></script>
+
+    <div id="previsualListTexturesWall" style="border:1px solid black; width:320px; height:512px; left: 995px; top:0px; position:absolute; overflow-y:scroll;" hidden="hidden"></div>
+    <div id="previsualListTexturesCeil" style="border:1px solid black; width:320px; height:512px; left: 995px; top:0px; position:absolute; overflow-y:scroll;" hidden="hidden"></div>
+
+</body>
+</html>

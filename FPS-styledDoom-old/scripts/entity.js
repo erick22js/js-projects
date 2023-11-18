@@ -1,13 +1,12 @@
 
 var WorldMatrix = {
-	x: 0//x:576
+	x:0
 	,yEye:0
 	,yBody:0
-	, z: 0 //z: 864
-	, rotation: -Math.PI*.5
-	, inclination: 0
-	,fov: Math.PI/4//4//3//6
-	,projD: null
+	, z: 0
+	,rotation:-Math.PI*.5
+	,fov:Math.PI/6
+	,projD:null
 	, camReach: 8192
 	, projSize: 0
 	, sectorAct: null
@@ -15,7 +14,6 @@ var WorldMatrix = {
 
 WorldMatrix.projD = WIDTH * .5 / Math.tan(WorldMatrix.fov);
 WorldMatrix.projSize = 2 * (Math.sin(WorldMatrix.fov) * WorldMatrix.projD);
-WorldMatrix.angleAdd = WorldMatrix.fov / (HEIGHT * .5);
 
 function detectColision(entity, moviment){
 	//var ntXR = 
@@ -62,9 +60,9 @@ function pointInPolygon(pol, px, py){
   return collision;
 }
 function coordInSector(x, y) {
-	for (var i = actMap.sectors.length-1; i > -1; i--)
-		if (pointInPolygon(actMap.sectors[i].vertex, x, y))
-			return actMap.sectors[i];
+	for (var i=0; i < actMap.sector.length; i++)
+		if (pointInPolygon(actMap.sector[i].region, x, y))
+			return actMap.sector[i];
 	return {floorY:0};
 }
 
@@ -87,9 +85,7 @@ function movePlayer(){
 	if (inputs.foward) { move[0] += Math.cos(WorldMatrix.rotation) * playerSpeed; move[1] += Math.sin(WorldMatrix.rotation) * playerSpeed;}
 	if (inputs.backward) { move[0] -= Math.cos(WorldMatrix.rotation) * playerSpeed; move[1] -= Math.sin(WorldMatrix.rotation) * playerSpeed;}
 	if(inputs.leftL)WorldMatrix.rotation -= .1;
-	if (inputs.rightL) WorldMatrix.rotation += .1;
-	if (inputs.upL && WorldMatrix.inclination<.5) WorldMatrix.inclination += .1;
-	if (inputs.downL && WorldMatrix.inclination > -0.5) WorldMatrix.inclination -= .1;
+	if(inputs.rightL)WorldMatrix.rotation += .1;
 	var col = detectColision(WorldMatrix, move);
 	WorldMatrix.x += col[0];
 	WorldMatrix.z += col[1];
@@ -100,7 +96,7 @@ function movePlayer(){
 
 
 
-var inputs = { leftL: false, rightL: false, upL: false, downL: false, foward:false, backward:false}
+var inputs = {leftL:false, rightL:false, foward:false, backward:false}
 
 window.onkeydown = function(k){
 	switch(k.key){
@@ -108,8 +104,6 @@ window.onkeydown = function(k){
 		case "ArrowDown":inputs.backward=true;break;
 		case "ArrowLeft":inputs.leftL=true;break;
 		case "ArrowRight": inputs.rightL = true; break;
-		case "w": case "W": inputs.upL = true; break;
-		case "s": case "S": inputs.downL = true; break;
 		case "+": WorldMatrix.yBody++; break;
 		case "-": WorldMatrix.yBody--; break;
 		case "[": loadMap(JSON.parse(localStorage.getItem("$ExPoRtEd$&MaP:"+prompt("Insira o nome do mapa:")))); break;
@@ -120,8 +114,6 @@ window.onkeyup = function(k){
 		case "ArrowUp":inputs.foward=false;break;
 		case "ArrowDown":inputs.backward=false;break;
 		case "ArrowLeft":inputs.leftL=false;break;
-		case "ArrowRight": inputs.rightL = false; break;
-		case "w": case "W": inputs.upL = false; break;
-		case "s": case "S": inputs.downL = false; break;
+		case "ArrowRight":inputs.rightL=false;break;
 	}
 }

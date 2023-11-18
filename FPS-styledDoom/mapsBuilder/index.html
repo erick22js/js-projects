@@ -8,32 +8,99 @@
     <canvas id="cv" width="512" height="512" style="width:512px; height:512px; left:0px; top:0px; position:absolute; border:2px solid black; image-rendering:pixelated;"></canvas>
     <canvas id="cvH" width="256" height="512" style="width:261px; height:512px; left:512px; top:0px; position:absolute; border:2px solid black; image-rendering:pixelated;"></canvas>
 
-    <input id="textureLoader" type="file" accept=".png" style="left:0px; top:528px; position:absolute" multiple oninput="alert(JSON.stringify(this.value))"></input>
-    <button onclick="if (textureLoaderInput.files.length) createTexturePack();else alert('Selecione imagens')" style="left:0px; top:560px; position:absolute">Gerar pacote de texturas</button>
+    <button onclick="loadProject()" style="left:0px; top:530px; position:absolute">Carregar projeto</button>
+    <button onclick="saveProject()" href="data:text/plain,macacop" download="arq.jes" style="left:0px; top:560px; position:absolute">Salvar projeto</button>
+    <button onclick="exportProject()" style="left:0px; top:590px; position:absolute">Exportar projeto</button>
 
-    <button onclick="exportTexturePack(prompt('Digite o nome:','myPack')) " style="left:0px; top:588px; position:absolute">Exportar pacote de textura</button>
-    <button onclick="importTexturePack(prompt('Digite o nome:','myPack'))" style="left:188px; top:588px; position:absolute">Importar pacote de textura</button>
+    <select id="listMaps" onchange='var s = this.value;
+			if(s){
+				localStorage.setItem("~~MaPnAmE¹?!", s);
+				mapName = s;
+				loadMap(s,"mapa")
+			};' style="left:256px; top:527px; height:25px; width:150px; position:absolute" contenteditable="true"></select>
+    <button onclick='var s = prompt("Insira o nome do mapa para salvar:",mapName);
+			if(s){
+				localStorage.setItem("~~MaPnAmE¹?!", s);
+				mapName = s;
+				saveMap(s,"mapa");
+			};' style="left:256px; top:560px; position:absolute">Salvar mapa</button>
+    <button onclick='var s = prompt("Insira o nome do mapa para criar:",mapName);
+			if(s){
+				localStorage.setItem("~~MaPnAmE¹?!", s);
+				mapName = s;
+				createMap(s,"mapa");
+			};' style="left:346px; width:60px; top:560px; position:absolute">+</button>
+    <button onclick="" style="left:256px; top:590px; position:absolute">Excluir mapa</button>
+    <button onclick="importMap()" style="left:346px; top:590px; position:absolute">Importar mapa</button>
 
-    <h3 id="dbg" style="top:-20px; left:778px; position:absolute">debug</h3>
-    <input id="sectorId" value="" placeholder="ID de setor" disabled style="left:778px; top:150px; position:absolute"></input>
-    <input id="isSidedef" type="checkbox" disabled style="left:778px; top:180px; position:absolute"><h4 style="left:808px; top:160px; position:absolute">Ligação entre setores</h4></input>
-    <input id="colision" type="checkbox" disabled style="left:778px; top:210px; position:absolute" oninput="refObject.barrier = this.checked"><h4 style="left:808px; top:190px; position:absolute">É uma barreira</h4></input>
-    <input id="texIUpper" value="" type="number" placeholder="ID de textura superior" disabled style="left:778px; top:240px; position:absolute" onchange="refObject.textureU = Number(this.value)"></input>
-    <input id="texIMiddle" value="" type="number" placeholder="ID de textura central" disabled style="left:778px; top:270px; position:absolute" onchange="refObject.textureM = Number(this.value)"></input>
-    <input id="texIDown" value="" type="number" placeholder="ID de textura inferior" disabled style="left:778px; top:300px; position:absolute" onchange="refObject.textureD = Number(this.value)"></input>
-    <input id="texX" value="" type="number" placeholder="Textura X" disabled style="left:778px; top:330px; width:85px; position:absolute" onchange="refObject.textureX=Number(this.value)"></input>
-    <input id="texY" value="" type="number" placeholder="Textura Y" disabled style="left:863px; top:330px; width:85px; position:absolute" onchange="refObject.textureY=Number(this.value)"></input>
-    <h4 style="left:778px; top:340px; position:absolute">Cor de ambiente</h4>
-    <input id="red" value="" type="number" placeholder="red" disabled style="left:778px; top:390px; width:50px; position:absolute" onchange="refObject.color[0]=Number(this.value)"></input>
-    <input id="green" value="" type="number" placeholder="green" disabled style="left:838px; top:390px; width:50px; position:absolute" onchange="refObject.color[1]=Number(this.value)"></input>
-    <input id="blue" value="" type="number" placeholder="blue" disabled style="left:898px; top:390px; width:50px; position:absolute" onchange="refObject.color[2]=Number(this.value)"></input>
-    <input id="floorY" value="" type="number" placeholder="Altura de chão" disabled style="left:778px; top:420px; position:absolute" onchange="refObject.floorY=Number(this.value)"></input>
-    <input id="ceilY" value="" type="number" placeholder="Altura de teto" disabled style="left:778px; top:450px; position:absolute" onchange="refObject.ceilY=Number(this.value)"></input>
-    <script src="raster.js"></script>
-    <script src="main.js"></script>
+    <button onclick="var dec = prompt('Insira o número do conjunto para o qual deseja carregar a(s) textura(s):\n1 => Paredes\n2 => Teto e Pisos\n3 => Sprites');if(dec)reimportTexture(dec)" style="left:512px; top:530px; position:absolute">Sobre-carregar texturas</button>
+    <button onclick="addTexture(1)" style="left:512px; top:560px; position:absolute">Aicionar texturas</button>
+
 
     <div id="previsualListTexturesWall" style="border:1px solid black; width:320px; height:512px; left: 995px; top:0px; position:absolute; overflow-y:scroll;" hidden="hidden"></div>
     <div id="previsualListTexturesCeil" style="border:1px solid black; width:320px; height:512px; left: 995px; top:0px; position:absolute; overflow-y:scroll;" hidden="hidden"></div>
+    <div id="previsualListTexturesSprite" style="border:1px solid black; width:320px; height:512px; left: 995px; top:0px; position:absolute; overflow-y:scroll;" hidden="hidden"></div>
+
+    <h3 id="dbg" style="top:-20px; left:778px; position:absolute">debug</h3>
+    <div style="border:1px solid black; left:778px; top:160px; width:200px; height: 354px; position:absolute; overflow-y:scroll;">
+        
+		<input id="sectorId" components="vertex line sector" value="" key="sector" type="text" placeholder="ID de setor" style=" margin-bottom:20px; margin-top:0px;" disabled></input>
+        <textarea id="descriptionItem" components="vertex line sector" value="" key="description" type="text" placeholder="Description" style=" margin-bottom:20px; margin-top:0px;" disabled></textarea>
+		
+        <input id="isSidedef" components="line" type="checkbox" style="position:relative" type="checkbox" disabled>
+        <h4 style="left: 25px; top: -40px; margin-bottom:-20px; position:relative">Ligação entre setores</h4></input>
+        <input id="colision" components="line" key="barrier" type="checkbox" style="position:relative" oninput="refObject.barrier = this.checked" disabled>
+        <h4 style="left: 25px;top: -40px; margin-bottom:-20px; position:relative">É uma barreira</h4></input>
+        
+		
+		<h4 style=" margin-bottom:0px; margin-top:0px;font-size:22px; font-weight:bold">Textura</h4>
+        <input id="skyT" components="sector line" key="skyTop" type="checkbox" style="position:relative" oninput="refObject.barrier = this.checked" disabled>
+        <h4 style="left: 25px;top: -40px; margin-bottom:-40px; position:relative">Exibe céu na parte superior</h4></input>
+        <input id="texIUpper" components="line sector" value="" key="textureU" type="text" placeholder="ID de textura superior" disabled onchange="refObject.textureU = this.value"></input>
+        <input id="texXU" components="line sector" value="" key="textureXU" type="number" placeholder="Textura X" disabled style="left:0px; width:78px; position:relative" onchange="refObject.textureXU=Number(this.value)"></input><input id="texYU" components="line sector" value="" key="textureYU" type="number" placeholder="Textura Y" disabled style="left:0px; width:78px; position:relative" onchange="refObject.textureYU=Number(this.value)"></input>
+        <input id="skyM" components="line" key="skyMiddle" type="checkbox" style="position:relative" oninput="refObject.barrier = this.checked" disabled>
+        <h4 style="left: 25px;top: -40px; margin-bottom:-40px; position:relative">Exibe céu no Meio</h4></input>
+        <input id="texIMiddle" components="line" value="" key="textureM" type="text" placeholder="ID de textura central" disabled onchange="refObject.textureM = this.value"></input>
+        <input id="texXM" components="line" value="" key="textureXM" type="number" placeholder="Textura X" disabled style="left:0px; width:78px; position:relative" onchange="refObject.textureXM=Number(this.value)"></input><input id="texYM" components="line" value="" key="textureYM" type="number" placeholder="Textura Y" disabled style="left:0px; width:78px; position:relative" onchange="refObject.textureYM=Number(this.value)"></input>
+        <input id="skyD" components="sector line" key="skyDown" type="checkbox" style="position:relative" oninput="refObject.barrier = this.checked" disabled>
+        <h4 style="left: 25px;top: -40px; margin-bottom:-40px; position:relative">Exibe céu na parte inferior</h4></input>
+        <input id="texIDown" components="line sector" value="" key="textureD" type="text" placeholder="ID de textura inferior" disabled onchange="refObject.textureD = this.value"></input>
+        <input id="texXD" components="line sector" value="" key="textureXD" type="number" placeholder="Textura X" disabled style="left:0px; width:78px; position:relative" onchange="refObject.textureXD=Number(this.value)"></input><input id="texYD" components="line sector" value="" key="textureYD" type="number" placeholder="Textura Y" disabled style="left:0px; width:78px; position:relative" onchange="refObject.textureYD=Number(this.value)"></input>
+        <h4 style=" margin-bottom:0px;">Alturas de plataforma</h4>
+        <input id="floorY" components="sector" value="" key="floorY" type="number" placeholder="Altura de chão" disabled onchange="refObject.floorY=Number(this.value)"></input>
+        <input id="ceilY" components="sector" value="" key="ceilY" type="number" placeholder="Altura de teto" disabled onchange="refObject.ceilY=Number(this.value)"></input>
+        <h4 style=" margin-bottom:0px;">Cor de setor</h4>
+        <input id="red" components="sector" value="" key="color" index="0" type="number" placeholder="red" disabled style="left:0px; width:50px; position:relative" onchange="refObject.color[0]=Number(this.value)"></input>
+        <input id="green" components="sector" value="" key="color" index="1" type="number" placeholder="green" disabled style="left:0px; width:50px; position:relative" onchange="refObject.color[1]=Number(this.value)"></input>
+        <input id="blue" components="sector" value="" key="color" index="2" type="number" placeholder="blue" disabled style="left:0px; width:50px; position:relative" onchange="refObject.color[2]=Number(this.value)"></input>
+        <h4 style=" margin-bottom:0px;">Cor de neblina</h4>
+        <input id="redFog" components="sector" value="" key="colorFog" index="0" type="number" placeholder="red" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[0]=Number(this.value)"></input>
+        <input id="greenFog" components="sector" value="" key="colorFog" index="1" type="number" placeholder="green" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[1]=Number(this.value)"></input>
+        <input id="blueFog" components="sector" value="" key="colorFog" index="2" type="number" placeholder="blue" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[2]=Number(this.value)"></input>
+        <input id="intensityFog" components="sector" value="" key="colorFog" index="3" type="number" placeholder="Intensidade de névoa" disabled onchange="refObject.colorFog[3]=Number(this.value)"></input>
+        <input id="distFogMin" components="sector" value="" key="distanceFogMin" type="number" placeholder="Distância mínima de névoa" disabled onchange="refObject.distanceFogMin=Number(this.value)"></input>
+        <input id="distFogMax" components="sector" value="" key="distanceFogMax" type="number" placeholder="Distância máxima de névoa" disabled onchange="refObject.distanceFogMax=Number(this.value)"></input>
+        <h4 style=" margin-bottom:0px;">Gradiente superior</h4>
+        <input id="gsredFog" components="line" value="" key="gradientScolor" index="0" type="number" placeholder="red" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[0]=Number(this.value)"></input>
+        <input id="gsgreenFog" components="line" value="" key="gradientScolor" index="1" type="number" placeholder="green" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[1]=Number(this.value)"></input>
+        <input id="gsblueFog" components="line" value="" key="gradientScolor" index="2" type="number" placeholder="blue" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[2]=Number(this.value)"></input>
+        <input id="gsintensity" components="line" value="" key="gradientScolor" index="3" type="number" placeholder="Intensidade de gradiente" disabled onchange="refObject.colorFog[3]=Number(this.value)"></input>
+        <input id="gsduration" components="line" value="" key="gradientSdur" type="number" placeholder="duracao de gradiente" disabled onchange="refObject.distanceFogMin=Number(this.value)"></input>
+        <h4 style=" margin-bottom:0px;">Gradiente inferior</h4>
+        <input id="giredFog" components="line" value="" key="gradientIcolor" index="0" type="number" placeholder="red" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[0]=Number(this.value)"></input>
+        <input id="gigreenFog" components="line" value="" key="gradientIcolor" index="1" type="number" placeholder="green" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[1]=Number(this.value)"></input>
+        <input id="giblueFog" components="line" value="" key="gradientIcolor" index="2" type="number" placeholder="blue" disabled style="left:0px; width:50px; position:relative" onchange="refObject.colorFog[2]=Number(this.value)"></input>
+        <input id="giintensity" components="line" value="" key="gradientIcolor" index="3" type="number" placeholder="Intensidade de gradiente" disabled onchange="refObject.colorFog[3]=Number(this.value)"></input>
+		<input type="color"></input>
+        <input id="giduration" components="line" value="" key="gradientIdur" type="number" placeholder="duracao de gradiente" disabled onchange="refObject.distanceFogMin=Number(this.value)"></input>
+    </div>
+
+
+    <script src="raster.js"></script>
+    <script src="utils.js"></script>
+    <script src="triangle.js"></script>
+    <script src="main.js"></script>
+
 
 </body>
 </html>

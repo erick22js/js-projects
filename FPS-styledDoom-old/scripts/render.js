@@ -1,167 +1,154 @@
 
 function drawFragment(fragment){
-	//var d = WorldMatrix.fov/(WIDTH*.5);
+	var d = WorldMatrix.fov/(WIDTH*.5);
 	var sx = 0;
+	/*
+	for (var i = 0; i < fragment.length; i++) {
+		var wall = fragment[i];
 
-	for (var sx = sx; sx <= WIDTH; sx++){
-		// id de setor, o mais baixo possivel para desenhar, o mais acima possivel para desenhar, o mais baixo possivel desenhar
-		var c = RAYS[sx];
-		var screenBuffer = [WorldMatrix.sectorAct.index, HEIGHT, -1];
+		var inter = wall[3];
+		var a1 = wall[8]; var a2 = wall[9];
+		var d1 = wall[6]; var d2 = wall[7];
+		var xs = WorldMatrix.projD * Math.tan(wall[8]);
+		var xe = WorldMatrix.projD * Math.tan(wall[9]);
+		var hs = (WorldMatrix.projD / (d1 * Math.cos(a1))) * 32;
+		var he = (WorldMatrix.projD / (d2 * Math.cos(a2))) * 32;
+		//dbg.innerHTML = "s: " + wall[8] + "<br>e: " + wall[9];
+		var xdif = xe - xs; var addx = xdif / Math.abs(xdif);
+		dbg.innerHTML = "Ponto A: " + inter[0] + "<br>Ponto B: " + inter[1] +
+			"<br>Ponto A: " + xs + "<br>Ponto B: " + xe;
+		;
+
+		//if (wall[8] > Math.PI * .5 || wall[8] < -Math.PI * .5 || wall[9] > Math.PI * .5 || wall[9] < -Math.PI * .5)
+
+		gl.drawWall(128 + xs, 128 + xe, wall[8], wall[9], wall[10], wall[11], hs, he)
+	}*/
+
+	for (var c = -WorldMatrix.fov; c < WorldMatrix.fov; c += d){
+		// id de setor, o mais baixo possivel para desenhar, o mais acima possivel para desenhar, o mais baixo possivel desenhar, id velho
+		var screenBuffer = [/**/WorldMatrix.sectorAct.index/*coordInSector(WorldMatrix.x, WorldMatrix.z).index*//**/, HEIGHT, -1];
 		var actLine = [WorldMatrix.x, WorldMatrix.z, 
 				WorldMatrix.x+Math.cos(WorldMatrix.rotation+c)*WorldMatrix.camReach
 				,WorldMatrix.z+Math.sin(WorldMatrix.rotation+c)*WorldMatrix.camReach
 				];
 		var dist = Infinity;
 		var inter = null;
-
-		var orderedWalls = [];
-
-		for (var i = 0; i < fragment.length; i++) {
-			var inte = intersection(actLine[0], actLine[1], actLine[2], actLine[3],
+		var ind = null;
+		for (var i = 0; i < fragment.length; i++){
+			var wall = fragment[i];
+			var inte = intersection(actLine[0],actLine[1],actLine[2],actLine[3],
 				fragment[i].v1[0], fragment[i].v1[1], fragment[i].v2[0], fragment[i].v2[1]);
 			if (inte) {
-				var dis = distance(WorldMatrix.x, WorldMatrix.z, inte[0], inte[1]);
-				if (orderedWalls.length == 0) {
-					orderedWalls.push([fragment[i], dis, inte]);
-					continue;
-				}
-				for (var w = 0; w < orderedWalls.length; w++) {
-					if (orderedWalls[w][1] >= dis) {
-						orderedWalls.splice(w, 0, [fragment[i], dis, inte]);
-						break;
-					}
-					else if (w == orderedWalls.length - 1) {
-						orderedWalls.push([fragment[i], dis, inte]);
-						break;
-					}
-				}
-			}
-		}
-		
-		for (var i = 0; i < orderedWalls.length; i++){
-			var wall = orderedWalls[i][0];
-			var inte = orderedWalls[i][2];
-			if (inte) {
 				//in projection, replace "dist" by "(dist * Math.cos(c))" for remove "fish eye"
-				var dis = orderedWalls[i][1];
+				var dis = distance(WorldMatrix.x, WorldMatrix.z, inte[0], inte[1]);
 				dist = dis;
 				inter = inte;
 				ind = i;
-				var Ux = distance(inter[0], inter[1], wall.v1[0], wall.v1[1]);
-
-				var projDiv = (WorldMatrix.projD / (dist * Math.cos(c)));
-
-				var wallY = actMap.sectors[wall.sector[0]].floorY;
-				var ceilY = actMap.sectors[wall.sector[0]].ceilY;
+				var widT = gl.TextureSize[0];
+				var Ux = distance(inter[0], inter[1], fragment[ind].v1[0], fragment[ind].v1[1])*2 / widT;
+				var wallY = actMap.sector[wall.sector[0]].floorY;
+				var ceilY = actMap.sector[wall.sector[0]].ceilY;
 				var wallH = ceilY - wallY;
 
-				var bottom = (projDiv * (WorldMatrix.yEye - wallY) + 80) + 80 * WorldMatrix.lookf;
-				var hei = projDiv * wallH;
-				var upper = (bottom - hei) + 80 * WorldMatrix.lookf;
+				var bottom = (WorldMatrix.projD / (dist * Math.cos(c))) * (WorldMatrix.yEye - wallY) + 80;
+				var hei = (WorldMatrix.projD / (dist * Math.cos(c))) * wallH;
+				var upper = bottom - hei;
 
-
-				FOGCOLOR = actMap.sectors[screenBuffer[0]].colorFog;
-				FOGMIN = actMap.sectors[screenBuffer[0]].distanceFogMin;
-				FOGMAX = actMap.sectors[screenBuffer[0]].distanceFogMax;
+				var dbg = screenBuffer[0];
+				
 
 				if (!wall.sidedef) {//Não é um sidedef
 
 					if (wall.textureM == -1) {
-						//gl.bindTexture(texturesSky[0]);
-						gl.TextureReposition = [wall.textureXM, wall.textureYM];
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, upper, bottom);
 					} else {
-						gl.bindTexture(textureDataWall[wall.textureM]);
 						//console.log(wall);
-						BLENDCOLOR = getFogByLevel(dist);
-						gl.TextureReposition = [wall.textureXM, wall.textureYM];
-						gl.drawStrip(sx, upper, Ux / (gl.TextureSize[0]), hei, -dist, wallH, screenBuffer[0], wall.cosdir);
+						gl.bindTexture(textureDataWall[wall.textureM]);
+						gl.drawStrip(sx, upper, Ux, hei, -dist, wallH, screenBuffer[0]);
 					}
 					//Draw floor and ceil
-					if (actMap.sectors[screenBuffer[0]].textureD == -1) {
-						//gl.bindTexture(texturesSky[0]);
+					gl.bindTexture(texturesSTored[1]);
+					if (actMap.sector[screenBuffer[0]].textureD == -1) {
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, bottom, screenBuffer[1]);
 					} else {
-						gl.bindTexture(textureDataCeil[actMap.sectors[screenBuffer[0]].textureD]);
-						gl.drawFloorStrip(sx, bottom + 80 * WorldMatrix.lookf, -dist, screenBuffer[0], WorldMatrix.yEye - wallY, c, screenBuffer[1]);
+						gl.bindTexture(textureDataCeil[actMap.sector[screenBuffer[0]].textureD]);
+						gl.drawFloorStrip(sx, bottom, -dist, screenBuffer[0], WorldMatrix.yEye - wallY, c, screenBuffer[1]);
 					}//ceil
-					if (actMap.sectors[screenBuffer[0]].textureU == -1) {
-						//gl.bindTexture(texturesSky[0]);
+					if (actMap.sector[screenBuffer[0]].textureU == -1) {
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, screenBuffer[2], upper);
 					} else {
-						gl.bindTexture(textureDataCeil[actMap.sectors[screenBuffer[0]].textureU]);
+						gl.bindTexture(textureDataCeil[actMap.sector[screenBuffer[0]].textureU]);
 						gl.drawCeilStrip(sx, upper, -dist, screenBuffer[0],
 							ceilY - WorldMatrix.yEye
 							, c, screenBuffer[2]);
 					}
-					break;
+					
 					screenBuffer[1] = upper;
 					screenBuffer[2] = bottom;
 					screenBuffer[0] = wall.sector[0];
 				}
 				else { //É um sidedef
-					var wallY2 = actMap.sectors[wall.sector[1]].floorY;
-					var ceilY2 = actMap.sectors[wall.sector[1]].ceilY;
+					var wallY2 = actMap.sector[wall.sector[1]].floorY;
+					var ceilY2 = actMap.sector[wall.sector[1]].ceilY;
 					var middleSize = Math.abs(wallY2 - wallY);
 					var topSize = Math.abs(ceilY2 - ceilY);
 
-					var middle = projDiv * middleSize;
-					var top = projDiv * topSize;
-
+					var middle = (WorldMatrix.projD / (dist * Math.cos(c))) * middleSize;
+					var top = (WorldMatrix.projD / (dist * Math.cos(c))) * topSize;
+					//Quando renderizar o chão abaixo da "parede invisivel"(sidedef)
+					//Deve-se renderizar o chão do setor onde o jogador se encontra
+					//***Ainda em Análise***
+					//Depois, subsequentemente, renderizar os chãos de outros setores
+					//que possuem sidedef com as opções restantes
 					var nxtSector = screenBuffer[0] == wall.sector[0] ? wall.sector[1] : wall.sector[0];
-					var lv1 = actMap.sectors[screenBuffer[0]].floorY;
-					var lv2 = actMap.sectors[nxtSector].floorY;
-					var up1 = actMap.sectors[screenBuffer[0]].ceilY;
-					var up2 = actMap.sectors[nxtSector].ceilY;
+					var lv1 = actMap.sector[screenBuffer[0]].floorY;
+					var lv2 = actMap.sector[nxtSector].floorY;
+					var up1 = actMap.sector[screenBuffer[0]].ceilY;
+					var up2 = actMap.sector[nxtSector].ceilY;
 					//Desenhar partes de parede
-					//inferior
+					//superior
 					if (wall.textureD == -1) {
-						//gl.bindTexture(texturesSky[0]);
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, upper, bottom);
 					} else {
 						gl.bindTexture(textureDataWall[wall.textureD]);
-						gl.TextureReposition = [wall.textureXD, wall.textureYD];
-						BLENDCOLOR = getFogByLevel(dist);
 						gl.drawStrip(sx,
 							bottom - middle * (lv1 < lv2 ? (wall.sector[0] == screenBuffer[0] ? 1 : 0) : 0)
-							//determinístico
-							+ 80 * WorldMatrix.lookf
-							//
-							, Ux / (gl.TextureSize[0]), middle, -dist, middleSize, screenBuffer[0], wall.cosdir);
+							, Ux, middle, -dist, middleSize, screenBuffer[0]);
 					}
-					//superior
+					//inferior
 					if (wall.textureU == -1) {
-						//gl.bindTexture(texturesSky[0]);
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, upper, bottom);
 					} else if (up1 > up2) {
 						gl.bindTexture(textureDataWall[wall.textureU]);
-						gl.TextureReposition = [wall.textureXU, wall.textureYU];
-						BLENDCOLOR = getFogByLevel(dist);
 						gl.drawStrip(sx,
 							upper + top * (up1 < up2 ? (wall.sector[0] == screenBuffer[0] ? -1 : 0) : (wall.sector[0] == screenBuffer[0] ? 0 : -1))
-							, Ux / (gl.TextureSize[0]), top, -dist, topSize, screenBuffer[0], wall.cosdir);
+							, Ux, top, -dist, topSize, screenBuffer[0]);
 					}
 
-					
+
 					//Desenhar chão e teto
-					if (actMap.sectors[screenBuffer[0]].textureD == -1) {
-						//gl.bindTexture(texturesSky[0]);
+					gl.bindTexture(texturesSTored[1]);
+					if (actMap.sector[screenBuffer[0]].textureD == -1) {
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, bottom, screenBuffer[1]);
 					} else {
-						gl.bindTexture(textureDataCeil[actMap.sectors[screenBuffer[0]].textureD]);
+						gl.bindTexture(textureDataCeil[actMap.sector[screenBuffer[0]].textureD]);
 						gl.drawFloorStrip(sx,
-							bottom - (middle) * (lv1 < lv2 ? (wall.sector[0] == screenBuffer[0] ? 0 : -1) : (wall.sector[0] == screenBuffer[0] ? 0 : 1))
-							+WorldMatrix.lookf * 80
-							//+ modif
+							bottom - middle * (lv1 < lv2 ? (wall.sector[0] == screenBuffer[0] ? 0 : -1) : (wall.sector[0] == screenBuffer[0] ? 0 : 1))
 							, -dist, screenBuffer[0],
 							WorldMatrix.yEye - lv1
 							, c, screenBuffer[1]);
 					}//teto
-					if (actMap.sectors[screenBuffer[0]].textureU == -1) {
-						//gl.bindTexture(texturesSky[0]);
+					if (actMap.sector[screenBuffer[0]].textureU == -1) {
+						gl.bindTexture(texturesSky[0]);
 						gl.drawBackStrip(sx, screenBuffer[2], upper);
 					} else {
-						gl.bindTexture(textureDataCeil[actMap.sectors[screenBuffer[0]].textureU]);
+						gl.bindTexture(textureDataCeil[actMap.sector[screenBuffer[0]].textureU]);
 						gl.drawCeilStrip(sx,
 							upper + top * (up1 < up2 ? (wall.sector[0] == screenBuffer[0] ? 0 : 1) : (wall.sector[0] == screenBuffer[0] ? 0 : -1))
 							, -dist, screenBuffer[0],
@@ -169,20 +156,21 @@ function drawFragment(fragment){
 							, c, screenBuffer[2]);
 					}
 
-					screenBuffer[1] = bottom + 80 * WorldMatrix.lookf ;
-					screenBuffer[2] = upper;// + 80 * WorldMatrix.lookf ;
+					screenBuffer[1] = bottom;
+					screenBuffer[2] = upper;
 					screenBuffer[0] = nxtSector;
 				}
 			}
 
 		}
+		sx++;
 	}
 }
 
 function renderVisiblesSector(){
 	var inFieldSectors = [];
 	WorldMatrix.sectorAct = coordInSector(WorldMatrix.x, WorldMatrix.z);
-	for(var se=0;se<actMap.sectors.length;se++){
+	for(var se=0;se<actMap.sector.length;se++){
 		if(sectorIsInView(se))inFieldSectors.push(se);
 	}
 	var inFieldWalls = [];
@@ -251,7 +239,7 @@ function renderVisiblesSector(){
 }
 
 function sectorIsInView(s){
-	var vertex = [actMap.sectors[s].minX, actMap.sectors[s].minY,  actMap.sectors[s].maxX, actMap.sectors[s].maxY];
+	var vertex = [actMap.sector[s].minX, actMap.sector[s].minY,  actMap.sector[s].maxX, actMap.sector[s].maxY];
 	//x1, y1, x2, y2
 	//var vertex = [0, 0, 256, 256];
 	var d1 = distance(WorldMatrix.x, WorldMatrix.z, vertex[0], vertex[1]);

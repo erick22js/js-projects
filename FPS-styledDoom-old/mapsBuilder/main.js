@@ -31,12 +31,8 @@ else
 var vertex = [];
 var lines = [];
 var sectors = [];
-//dataGame.texturesWall
-//dataGame.texturesFlat
-//dataGame.sprites
-var dataGame = {
-	maps: {}, texturesWall: [], texturesFlat: [], sprites: {}
-};
+
+var p_position = [0, 0];
 
 
 var toX = (x) => ~~((((x) / Zoom) + (GRID_SIZE * .25 / Zoom)) / (GRID_SIZE / Zoom)) * (GRID_SIZE / Zoom) + xM;//((~~((x + GRID_SIZE / Zoom * .25) / (GRID_SIZE))) * (GRID_SIZE) )/Zoom+ xM;
@@ -45,7 +41,89 @@ var toY = (y) => ~~((((y) / Zoom) + (GRID_SIZE * .25 / Zoom)) / (GRID_SIZE / Zoo
 var drawToX = (x) => (x - xM) * Zoom;//toX(x) - 2 * xM;
 var drawToY = (y) => (y - yM) * Zoom;//toY(y) - 2 * yM;
 
-
+function saveMap(tag){
+	for(var v in vertex){
+		vertex[v].ind = v;
+	}for(var l in lines){
+		lines[l].ind1 = lines[l].v1.ind;
+		lines[l].ind2 = lines[l].v2.ind;
+	}for(var s in sectors){
+		sectors[s].indV = [];
+		for(var i=0;i<sectors[s].vertex.length;i++)
+			sectors[s].indV.push(sectors[s].vertex[i].ind);
+	}
+	var data = {
+		vertex:vertex,
+		lines:lines,
+		sectors:sectors,
+		sectorI:sectorI,
+		ppos:p_position
+	}
+	sectorI = sectors.length;
+	localStorage.setItem(tag, JSON.stringify(data));
+}
+function loadMap(tag){
+	var data = JSON.parse(localStorage.getItem(tag));
+	vertex = data.vertex;
+	lines = data.lines;
+	sectors = data.sectors;
+	p_position = data.ppos;
+	for(var l in lines){
+		lines[l].v1 = vertex[lines[l].ind1];
+		lines[l].v2 = vertex[lines[l].ind2];
+	}for(var s in sectors){
+		var size = sectors[s].vertex.length;
+		sectors[s].vertex = [];
+		for(var i=0;i<size;i++)
+			sectors[s].vertex.push(vertex[data.sectors[s].indV[i]]);
+	}
+	sectorI = sectors.length;
+	sectorI = data.sectorI;
+}
+function exportMap(tag){
+	var mapData = {vertex:[], walls:[], sector:[], ppos:p_position};
+	for(var v in vertex){
+		vertex[v].ind = v;
+		mapData.vertex.push([vertex[v].x, vertex[v].y]);
+	}
+	for (var l in lines) {
+		lines[l].ind = l;
+		mapData.walls.push({
+			v1: lines[l].v1.ind
+			, v2: lines[l].v2.ind
+			, textureX: lines[l].textureX
+			, textureY: lines[l].textureY
+			, textureU: lines[l].sidedef ? lines[l].textureU : lines[l].textureD
+			, textureM: lines[l].textureM
+			, textureD: lines[l].sidedef ? lines[l].textureD : lines[l].textureU
+			, sidedef: lines[l].sidedef
+			, barrier: lines[l].barrier
+			, sector: lines[l].sector
+		})
+	}
+	for(var s in sectors){
+		mapData.sector.push({
+			walls: []
+			, region: []
+		});
+		for (var l in lines)
+			if (valueInList(s, lines[l].sector)>-1) {
+				mapData.sector[s].walls.push(lines[l].ind)
+			}
+		for(var v in sectors[s].vertex)
+			mapData.sector[s].region.push({ x: sectors[s].vertex[v].x, y: sectors[s].vertex[v].y });
+		mapData.sector[s].textureU = sectors[s].textureU;
+		mapData.sector[s].textureD = sectors[s].textureD;
+		mapData.sector[s].ceilY = sectors[s].ceilY;
+		mapData.sector[s].floorY = sectors[s].floorY;
+		mapData.sector[s].color = sectors[s].color;
+	}
+	sectorI = sectors.length;
+	var st = JSON.stringify(mapData);
+	alert("$ExPoRtEd$&MaP:" + tag)
+	localStorage.setItem("$ExPoRtEd$&MaP:" + tag, st);
+	return st;
+}
 var polygonMaskSelect = 0;
 var addPLM = 1;
 function updtPolygonMask() {
@@ -60,12 +138,32 @@ updtPolygonMask();
 function redraw(){
 	ctx.clearRect(0, 0, 512, 512);
 	ctxH.clearRect(0, 0, 256, 512);
+	
+	//drawGrid on canvas
+	ctx.fillStyle = "black";
+	for (var x = 0; x <= 512; x += GRID_SIZE)
+		ctx.fillRect(x, 0, .5, 512);
+	for (var y = 0; y <= 512; y += GRID_SIZE)
+		ctx.fillRect(0, y, 512, .5);
+	var size = Math.pow(2, Math.abs((Math.log2(Zoom)) % 3));
+	ctx.fillStyle = "black";
+	for (var x = 0; x <= 512; x += (GRID_SIZE*2) * size)
+		ctx.fillRect(x-1, 0, 1, 512);
+	for (var y = 0; y <= 512; y += (GRID_SIZE*2) * size)
+		ctx.fillRect(0, y-1, 512, 1);
 
-	//Draw Sectors
+
+	//drawGrid on previsualize
+	ctxH.fillStyle = "black";
+	for (var x = 0; x <= 256; x += GRID_SIZE)
+		ctxH.fillRect(x, 0, .5, 512);
+	for (var y = 0; y <= 512; y += GRID_SIZE)
+		ctxH.fillRect(0, y, 512, .5);
+	ctxH.fillRect(0, 254.75, 512, 2.5);
+
 	for(var s in sectors){
-		ctx.fillStyle = sectorToHue(s) +"100%,80%,1)";
+		ctx.fillStyle = sectorToHue(s) +"100%,50%,.4)";
 		ctx.beginPath();
-		if(sectors[s].vertex.length>0)
 		ctx.moveTo(
 			drawToX(sectors[s].vertex[0].x)//sectors[s].vertex[0].x * Zoom - xM
 			, drawToY(sectors[s].vertex[0].y)//sectors[s].vertex[0].y * Zoom - yM
@@ -79,7 +177,6 @@ function redraw(){
 		ctx.fill();
 		ctx.fillStyle = selectedI + "" == s && component == "sector" ? "rgba(0,0,0," + polygonMaskSelect + ")" : "rgba(0,0,0,0)";
 		ctx.beginPath();
-		if(sectors[s].vertex.length>0)
 		ctx.moveTo(
 			drawToX(sectors[s].vertex[0].x)//sectors[s].vertex[0].x * Zoom - xM
 			, drawToY(sectors[s].vertex[0].y)//sectors[s].vertex[0].y * Zoom - yM
@@ -92,32 +189,6 @@ function redraw(){
 		}
 		ctx.fill();
 	}
-
-
-	//drawGrid on canvas
-	ctx.fillStyle = "black";
-	for (var x = 0; x <= 512; x += GRID_SIZE)
-		ctx.fillRect(x, 0, .5, 512);
-	for (var y = 0; y <= 512; y += GRID_SIZE)
-		ctx.fillRect(0, y, 512, .5);
-	var length_index = (Math.log2(Zoom) % 3);
-	var size = Math.pow(2, length_index<0?3-Math.abs(length_index):length_index);
-	ctx.fillStyle = "black";
-	for (var x = 0; x <= 512; x += (GRID_SIZE * 2) * size)
-		ctx.fillRect(x - 1, 0, 1, 512);
-	for (var y = 0; y <= 512; y += (GRID_SIZE * 2) * size)
-		ctx.fillRect(0, y - 1, 512, 1);
-
-
-	//drawGrid on previsualize
-	ctxH.fillStyle = "black";
-	for (var x = 0; x <= 256; x += GRID_SIZE)
-		ctxH.fillRect(x, 0, .5, 512);
-	for (var y = 0; y <= 512; y += GRID_SIZE)
-		ctxH.fillRect(0, y, 512, .5);
-	ctxH.fillRect(0, 254.75, 512, 2.5);
-
-	//Draw Lines
 	for(var l in lines){
 		//ctx.strokeStyle = selectedI+""==l&&selectedC=="line"?"gray":"black";
 		ctx.lineWidth = 6;
@@ -145,8 +216,6 @@ function redraw(){
 		);
 		ctx.stroke();
 	}
-
-	//Draw vertex
 	ctx.fillStyle = "orange";
 	for (var i in vertex) {
 		ctx.fillStyle = selectedI + "" == i && (component == "vertex" || (component=="line"&&mode=="draw")) ? "red" : "black";
@@ -158,9 +227,16 @@ function redraw(){
 			-4 + drawToX(vertex[i].x),//vertex[i].x * Zoom - xM,
 			-4 + drawToY(vertex[i].y)/*vertex[i].y * Zoom - yM*/, 8, 8);
 	}
-
+	
+	{
+		ctx.fillStyle = "green";
+		ctx.fillRect(
+			-7 + drawToX(p_position[0]),//vertex[i].x * Zoom - xM,
+			-7 + drawToY(p_position[1])/*vertex[i].y * Zoom - yM*/, 14, 14);
+	}
+	
 	//Drawn previsual
-	if (component == "line" && selectedI != null && mode!="draw") {
+	if (component == "line" && selectedI != null) {
 		var v1x = drawToX(lines[selectedI].v1.x);
 		var v2x = drawToX(lines[selectedI].v2.x);
 		var v1z = drawToY(lines[selectedI].v1.y);
@@ -185,8 +261,6 @@ function redraw(){
 		ctxH.fill();
 
 	}
-
-
 
 
 
@@ -224,14 +298,6 @@ function addSector(x, y){
 function insertInSector(v1, v2, l, li) {
 	if (valueInList(sectorI, l.sector) < 0 && !l.sidedef)
 	if(sectors[sectorI]){
-		if(sectors[sectorI].vertex.length==0){
-			sectors[sectorI].vertex.push(v1, v2);
-			return
-		}
-		if (sectors[sectorI].vertex.length == 2&&compareVertex(l.v2, sectors[sectorI].vertex[0])) {
-			var dve1 = sectors[sectorI].vertex[1]; var dve2 = sectors[sectorI].vertex[0];
-			sectors[sectorI].vertex[0] = dve1; sectors[sectorI].vertex[1] = dve2;
-		}
 		l.sector.push(sectorI);
 		if (l.sector.length > 1)
 			l.sidedef = true;
@@ -240,7 +306,7 @@ function insertInSector(v1, v2, l, li) {
 		else
 			sectors[sectorI].vertex.push(v1);
 	} else {
-		sectors[sectorI] = { vertex: [], color: [1, 1, 1, 1], textureD: "blank", textureU: "blank", floorY: 0, ceilY: 72, colorFog: [0, 0, 0, .4], distanceFogMin: 320, distanceFogMax: 640};
+		sectors[sectorI] = { vertex: [], color: [1, 1, 1, 1], textureD: 0, textureU: 0, floorY: 0, ceilY: 72 };
 		//v1.sector = sectorI;
 		//v2.sector = sectorI;
 		l.sector.push(sectorI);
@@ -264,7 +330,7 @@ function selectComponent(x, y) {
 	} else if (component == "line") {
 		return pickNearestLine(x, y);
 	} else if (component == "sector") {
-		for (var i = sectors.length-1; i > -1;i--)
+		for (var i in sectors)
 			if (pointInPolygon(sectors[i].vertex, x, y))
 				return i;
 	}
@@ -274,37 +340,15 @@ function insertVertex(x, y){
 	if(!selectComponent(x, y)) vertex.push({x:x, y:y});
 }
 function createLine(x, y) {
-	function genLine(ind) {
-		lines.push({
-			v1: vertex[selectedI], v2: vertex[ind], v1i: selectedI, v2i: ind, sector: [],
-			textureU: "blank", textureM: "blank", textureD: "blank",
-			skyTop: false, skyMiddle: false, skyDown: false,
-			textureXU: 0, textureYU: 0, textureXM: 0, textureYM: 0, textureXD: 0, textureYD: 0,
-			barrier: true, sidedef: false,
-			gradientScolor: [1,1,1,0], gradientSdur: 1,
-			gradientIcolor: [1,1,1,0], gradientIdur: 1
-		});
-	}
 	if(selectedI==null){
 		selectedI = pickVertex(x, y);
-		if (!selectedI) {
-			insertVertex(x, y);
-			selectedI = vertex.length-1;
-		}
-	} else {
-		var inserted = false;
+	}else{
 		for(var i in vertex)
 			if (distance(x, y, vertex[i].x, vertex[i].y) <= 10 / Zoom) {
-				genLine(i);
+				lines.push({ v1: vertex[selectedI], v2: vertex[i], v1i: selectedI, v2i: i, sector: [], textureU:0, textureM:0, textureD:0, textureX: 0, textureY:0, barrier: true, sidedef: false });
 				selectedI = i;
-				inserted = true;
 				break;
 			}
-		if (!inserted) {
-			insertVertex(x, y);
-			genLine(vertex.length - 1);
-			selectedI = vertex.length - 1;
-		}
 	}
 }
 function pickVertex(x, y){
@@ -355,10 +399,6 @@ function removeSector(x, y){
 	sectorI = sectors.length;
 }
 function removeSectorByIndex(i) {
-	clearSector(i);
-	sectors.splice(i, 1);
-}
-function clearSector(i, maintain){
 	for (var l in lines) {
 		var sec = valueInList(i, lines[l].sector);
 		if (lines[l].sidedef) {
@@ -368,15 +408,14 @@ function clearSector(i, maintain){
 				//alert(lines[l].sector)
 				lines[l].sidedef = false;
 			}
-			if(!maintain) if (lines[l].sector[1] > i) lines[l].sector[1]--;
+			if (lines[l].sector[1] > i) lines[l].sector[1]--;
 		} else {
 			if (lines[l].sector[0] == i)
 				lines[l].sector = [];
 		}
-		if(!maintain) if (lines[l].sector[0] > i) lines[l].sector[0]--;
+		if (lines[l].sector[0] > i) lines[l].sector[0]--;
 	}
-	sectors[i].indV = [];
-	sectors[i].vertex = [];
+	sectors.splice(i, 1);
 }
 
 function valueInList(value, list) {
@@ -404,8 +443,8 @@ var mouseX = 0; var mouseY = 0;
 function dbgTextUpdate(x, y) {
 	if (x) mouseX = x; if(y) mouseY = y
 	dbg.innerText =
-		"mode: " + mode + "\ncomponent: " + component + "\nselected: " + selectedC + "-" + selectedI + "\nsectorI for draw: " + sectorI
-		//+ "\nselected_element: " + JSON.stringify(refObject)
+		"mode: " + mode + "\ncomponent: " + component + "\nselected: " + selectedC + "-" + selectedI + "\nmouse x: " + mouseX + " y: " + mouseY
+		+ "\nfirst vertex: " + JSON.stringify(vertex[0])
 		+ "\npos move: " + xM +"_"+yM
 		+ "\nzoom: " + Zoom
 	;
@@ -438,12 +477,14 @@ cv.onmousedown = function(c){
 		if(component=="vertex")
 			selectedI = pickVertex(x, y);
 		
-	}else if(mode=="pick"){
-		component = "sector";
-		selectedI = selectComponent(x, y);
-		if(selectedI!=null)
-			sectorI = selectedI;
+	} else if (mode == "pov_position_set") {
+		/*selectedI = selectComponent(x, y);
+		if(component=="vertex")
+			selectedI = pickVertex(x, y);*/
+		pov_position_set = [x, y];
+		
 	}
+	
 	updateInfo();
 	redraw();
 }
@@ -461,7 +502,7 @@ cv.onmouseup = function(c){
 	redraw();
 	dbgTextUpdate(c.clientX, c.clientY);
 }
-cv.onmouseup = function () { }
+window.onmouseup = function () { }
 cv.onmousemove = function(c){
 	var x = c.clientX;
 	x = toX(x);
@@ -493,20 +534,10 @@ cv.onmousewheel = function (k) {
 		xM = xM - Math.abs(xM % (16 / Zoom));
 		yM = yM - Math.abs(yM % (16 / Zoom));
 	}
-	dbgTextUpdate(0, 0);
 	redraw();
 }
-cv.onmouseover = function(){
-	mouseOverCanvas = true
-}
-cv.onmouseout = function(){
-	mouseOverCanvas = false
-}
-var mouseOverCanvas = false;
-var focusOnCanvas = false;
-window.onkeydown = function (k) {
-	if(mouseOverCanvas)
-	if (!k.ctrlKey)
+
+window.onkeydown = function(k){
 	switch(k.key){
 		case "V":
 		case "v":
@@ -551,11 +582,7 @@ window.onkeydown = function (k) {
 		case "P":
 		case "p":
 			selectedI = null;
-			mode = "pick";
-			break;
-		case "C":
-		case "c":
-			if(component=="sector"&&sectorI!=null)clearSector(sectorI, true)
+			mode = "pov_position_set";
 			break;
 		case "=":
 			var s = prompt("Insira o nome do mapa para salvar:",mapName);
@@ -610,39 +637,64 @@ redraw();
 
 
 
-var elSecI,
-	elTexU, elTexM, elTexD,
-	elTexXU, elTexYU, elTexXM, elTexYM, elTexXD, elTexYD,
-	elRed, elGreen, elBlue, elRedFog, elGreenFog, elBlueFog,
-	elIntensityFog,
-	elFogMin, elFogMax,
-	elFloorY, elCeilY, elIsSide, elCol;
+var elSecI = document.getElementById("sectorId");
+
+var elTexU = document.getElementById("texIUpper");
+var elTexM = document.getElementById("texIMiddle");
+var elTexD = document.getElementById("texIDown");
+var elTexX = document.getElementById("texX");
+var elTexY = document.getElementById("texY");
+
+var elRed = document.getElementById("red"); var elGreen = document.getElementById("green"); var elBlue = document.getElementById("blue");
+
+var elFloorY = document.getElementById("floorY");
+var elCeilY = document.getElementById("ceilY");
+
+var elIsSide = document.getElementById("isSidedef");
+var elCol = document.getElementById("colision");
 
 var refObject = null;
 
 function updateInfo() {
-	for (var e in elementsEditor){
-		elementsEditor[e].element.value = "";
-		elementsEditor[e].element.checked = false;
-		elementsEditor[e].element.disabled = true;
-	}
-	if(selectedI!=null){
-		var vertexs = vertex;
-		refObject = eval(component+"s[selectedI]");
-		for (var e in elementsEditor){
-			//console.log(elementsEditor[e].element.);
-			if(elementsEditor[e].element.getAttribute("components").indexOf(component)>-1){
-				if(elementsEditor[e].element.type=="number"){
-					if(elementsEditor[e].element.getAttribute("index")!=null){
-						elementsEditor[e].element.value = Number(refObject[elementsEditor[e].element.getAttribute("key")][Number(elementsEditor[e].element.getAttribute("index"))])
-					}else
-						elementsEditor[e].element.value = Number(refObject[elementsEditor[e].element.getAttribute("key")]);
-				}else if(elementsEditor[e].element.type=="checkbox"){
-					elementsEditor[e].element.checked = Boolean(refObject[elementsEditor[e].element.getAttribute("key")]);
-				}else{
-					elementsEditor[e].element.value = String(refObject[elementsEditor[e].element.getAttribute("key")]);
-				}
-				elementsEditor[e].element.disabled = null;
+	elIsSide.disabled = true; elIsSide.checked = false;
+	elCol.disabled = true; elCol.checked = false;
+	elSecI.disabled = true; elSecI.value = "";
+	elTexU.disabled = true; elTexU.value = "";
+	elTexM.disabled = true; elTexM.value = "";
+	elTexD.disabled = true; elTexD.value = "";
+	elFloorY.disabled = true; elFloorY.value = "";
+	elCeilY.disabled = true; elCeilY.value = "";
+	elTexX.disabled = true; elTexX.value = ""; elTexY.disabled = true; elTexY.value = "";
+	elRed.disabled = true; elRed.value = ""; elGreen.disabled = true; elGreen.value = ""; elBlue.disabled = true; elBlue.value = "";
+	if (selectedI != null) {
+		switch (component) {
+			case "vertex": {
+				refObject = vertex[selectedI];
+				break;
+			}
+			case "line": {
+				elementListTexturesWall.hidden = null;
+				elementListTexturesCeil.hidden = "hidden";
+				refObject = lines[selectedI];
+				elSecI.value = refObject.sector;
+				elIsSide.checked = refObject.sidedef; elCol.disabled = null; elCol.checked = refObject.barrier;
+				if (refObject.sidedef)elTexU.disabled = null; elTexU.value = refObject.textureU;
+				elTexM.disabled = null; elTexM.value = refObject.textureM;
+				if (refObject.sidedef)elTexD.disabled = null; elTexD.value = refObject.textureD;
+				elTexX.disabled = null; elTexX.value = refObject.textureX; elTexY.disabled = null; elTexY.value = refObject.textureY;
+				break;
+			}
+			case "sector": {
+				elementListTexturesWall.hidden = "hidden";
+				elementListTexturesCeil.hidden = null;
+				refObject = sectors[selectedI];
+				elSecI.value = selectedI;
+				elFloorY.disabled = null; elFloorY.value = refObject.floorY;
+				elCeilY.disabled = null; elCeilY.value = refObject.ceilY;
+				elTexU.disabled = null; elTexU.value = refObject.textureU;
+				elTexD.disabled = null; elTexD.value = refObject.textureD;
+				elRed.disabled = null; elRed.value = refObject.color[0]; elGreen.disabled = null; elGreen.value = refObject.color[1]; elBlue.disabled = null; elBlue.value = refObject.color[2];
+				break;
 			}
 		}
 	}
@@ -672,70 +724,143 @@ function pointInPolygon(vertices, px, py) {
 
 
 
-var elementsEditor = {
-	"sectorId":null, "descriptionItem": null,
-	"texIUpper":null, "texIMiddle":null, "texIDown":null,
-	"skyT":null, "skyM":null, "skyD":null,
-	"texXU":null, "texYU":null,
-	"texXM":null, "texYM":null,
-	"texXD":null, "texYD":null,
-	"red":null, "green":null, "blue":null,
-	"redFog":null, "greenFog":null, "blueFog":null,
-	"intensityFog":null,
-	"distFogMin":null, "distFogMax":null,
-	"floorY":null, "ceilY":null,
-	"isSidedef":null, "colision":null,
-	"gsredFog":null, "gsgreenFog":null, "gsblueFog":null,
-	"gsintensity":null, "gsduration":null,
-	"giredFog":null, "gigreenFog":null, "giblueFog":null,
-	"giintensity":null, "giduration":null
+
+
+
+
+
+
+
+//load textures by path
+var textureLoaderInput = document.getElementById("textureLoader");
+var fileReader = new FileReader();
+var decoded = "";
+var less = null;
+var actIndexTextures = 0;
+var texturesLoaded = [];
+var loadFor = "Wall";
+
+var texturePack = {
+	wall:[],
+	ceil:[]
+}
+
+fileReader.onloadend = function () {
+	decoded = fileReader.result;
+	texturesLoaded.push(decoded);
+	less--;
+	if (less > -1) {
+		fileReader.readAsDataURL(textureLoaderInput.files[less]);
+		addTextureIndex(decoded, actIndexTextures);
+		console.log(decoded);
+
+		actIndexTextures++;
+	} else {
+		alert("As texturas foram cerregadas!");
+		console.log(texturesLoaded);
+		console.log(JSON.stringify(texturesLoaded));
+	}
+}
+
+textureLoaderInput.oninput = function () {
+}
+
+function createTexturePack() {
+	texturesLoaded = [];
+	var decision = prompt("Que conjunto prefere carregar:\n1 para paredes\n2 para teto e piso\nqualquer outro valor para cancelar");
+	loadFor = decision == "1" ? "Wall" : decision == "2" ? "Ceil" : null;
+	if (!loadFor) return;
+
+	actIndexTextures = 0;
+	if (loadFor == "Wall") {
+		texturePack.wall = [];
+		elementListTexturesWall.innerHTML = "";
+	}
+	else {
+		texturePack.ceil = [];
+		elementListTexturesCeil.innerHTML = "";
+	}
+	less = textureLoaderInput.files.length;
+	fileReader.readAsDataURL(textureLoaderInput.files[0]);
 }
 
 
 
-
+var elementListTexturesWall;
+var elementListTexturesCeil;
 
 window.onload = function () {
-	for (var e in elementsEditor){
-		elementsEditor[e] = {element:document.getElementById(e)};
-		var setValue = function(){
-			var value = this.type=="number"?Number(this.value):this.type=="checkbox"?this.checked:String(this.value);
-			console.log(value)
-			console.log(this.checked);
-			if(this.getAttribute("index")!=null){
-				refObject[this.getAttribute("key")][Number(this.getAttribute("index"))] = value;
-				console.log(refObject[this.getAttribute("key")][Number(this.getAttribute("index"))])
-			}else{
-				refObject[this.getAttribute("key")] = value;
-				console.log(refObject[this.getAttribute("key")])
-			}
-		}
-		elementsEditor[e].element.oninput = setValue;
-		/*if(elementsEditor[e].element.type=="checkbox")
-			elementsEditor[e].element.onchange*/
-		console.log(elementsEditor[e].element.id);
-	}/*
-	elSecI = document.getElementById("sectorId");
-	elTexU = document.getElementById("texIUpper"); elTexM = document.getElementById("texIMiddle"); elTexD = document.getElementById("texIDown");
-	elTexXU = document.getElementById("texXU"); elTexYU = document.getElementById("texYU");
-	elTexXM = document.getElementById("texXM"); elTexYM = document.getElementById("texYM");
-	elTexXD = document.getElementById("texXD"); elTexYD = document.getElementById("texYD");
-	elRed = document.getElementById("red"); elGreen = document.getElementById("green"); elBlue = document.getElementById("blue");
-	elRedFog = document.getElementById("redFog"); elGreenFog = document.getElementById("greenFog"); elBlueFog = document.getElementById("blueFog");
-	elIntensityFog = document.getElementById("intensityFog");
-	elFogMin = document.getElementById("distFogMin"); elFogMax = document.getElementById("distFogMax");
-	elFloorY = document.getElementById("floorY"); elCeilY = document.getElementById("ceilY");
-	elIsSide = document.getElementById("isSidedef"); elCol = document.getElementById("colision");
-*/
-	elementListTexturesWall = document.getElementById("previsualListTexturesWall");
-	elementListTexturesCeil = document.getElementById("previsualListTexturesCeil");
-	elementListTexturesSprite = document.getElementById("previsualListTexturesSprite");
-
-	lists = {
-		Wall: elementListTexturesWall
-		, Flat: elementListTexturesCeil
-		, sprites: elementListTexturesSprite
-	};
+	elementListTexturesWall = document.getElementsByTagName("div")[0];
+	elementListTexturesCeil = document.getElementsByTagName("div")[1];
 }
 
+function addTextureIndex(uri, index) {
+	var img = document.createElement("img");
+	img.src = uri;
+	elementListTexturesWall.hidden = "hidden";
+	elementListTexturesCeil.hidden = "hidden";
+	if (loadFor == "Wall") {
+		img.uri = uri;
+		elementListTexturesWall.hidden = null;
+		elementListTexturesWall.innerHTML = elementListTexturesWall.innerHTML + "<hr><h2>" + "#" + index + "</h2>";
+		elementListTexturesWall.appendChild(img);
+		img.onload = function () {
+			texturePack.wall.push(this.uri);
+		}
+	} else {
+		img.uri = uri;
+		elementListTexturesCeil.hidden = null;
+		elementListTexturesCeil.innerHTML = elementListTexturesCeil.innerHTML + "<hr><h2>" + "#" + index + "</h2>";
+		elementListTexturesCeil.appendChild(img);
+		img.onload = function () {
+			texturePack.ceil.push(this.uri);
+		}
+	}
+}
 
+function createTexture(img) {
+	var gctx = document.createElement("canvas").getContext("2d");
+	gctx.canvas.width = img.width;
+	gctx.canvas.height = img.height;
+	gctx.drawImage(img, 0, 0);
+	var data = gctx.getImageData(0, 0, img.width, img.height).data;
+	var mapData = [];
+	for (var y = 0; y < img.height; y++) {
+		var line = [];
+		var x = 0;
+		for (; x < img.width; x++)
+			line.push([data[y * img.width * 4 + x * 4] / 255, data[y * img.width * 4 + x * 4 + 1] / 255, data[y * img.width * 4 + x * 4 + 2] / 255, data[y * img.width * 4 + x * 4 + 3] / 255]);
+		line.push([data[y * img.width * 4 + x * 4] / 255, data[y * img.width * 4 + x * 4 + 1] / 255, data[y * img.width * 4 + x * 4 + 2] / 255, data[y * img.width * 4 + x * 4 + 3] / 255]);
+		mapData.push(line);
+		if (y == img.height - 1)
+			mapData.push(line);
+	}
+	return { map: mapData, width: img.width, height: img.height };
+}
+function exportTexturePack(tag) {
+	localStorage.setItem("$$MapBiuLder;..:" + tag, JSON.stringify(texturePack));
+}
+
+function importTexturePack(tag) {
+	texturePack = JSON.parse(localStorage.getItem("$$MapBiuLder;..:" + tag));
+	elementListTexturesWall.innerHTML = "";
+	elementListTexturesCeil.innerHTML = "";
+	for (var i in texturePack.wall) {
+		var dat = texturePack.wall[i];
+		var img = document.createElement("canvas");
+		img.src = dat;
+		elementListTexturesWall.appendChild(document.createElement("hr"));
+		var tag = document.createElement("h2"); tag.innerHTML = "#" + i;
+		elementListTexturesWall.appendChild(tag);
+		elementListTexturesWall.appendChild(img);
+	}
+	for (var i in texturePack.ceil) {
+		var dat = texturePack.ceil[i];
+		var img = document.createElement("canvas")
+		img.src = dat;
+		elementListTexturesCeil.appendChild(document.createElement("hr"));
+		var tag = document.createElement("h2"); tag.innerHTML = "#" + i;
+		elementListTexturesCeil.appendChild(tag);
+		elementListTexturesCeil.appendChild(img);
+	}
+}
