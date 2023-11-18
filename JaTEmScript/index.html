@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title></title>
+</head>
+<body>
+
+<textarea id="editor" style="width:340px; height:340px"></textarea>
+<button id="compile" onclick="debug.textContent = JSON.stringify(generateJatemMap(editor.value))">compile</button>
+<h4 id="debug">Debug</h4>
+
+<script src="JaTEmMapper.js"></script>
+<script src="JaTEmCompiler.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>

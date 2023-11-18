@@ -1,0 +1,45 @@
+<html>
+	<body>
+		<canvas id="screen" width="800" height="400" style="border:1px solid black;">Your system didn't support canvas HTML5!</canvas>
+		<script id="vs" type="shader.vertex">
+			attribute vec3 a_position;
+			attribute vec4 a_other;
+			attribute vec3 a_color;
+			attribute vec2 a_uv;
+			
+			uniform float tete;
+			uniform mat4 matrix;
+			
+			varying vec3 v_color;
+			varying vec2 v_uv;
+			void main(){
+				vec3 pos = a_position;
+				pos.x += tete;
+				vec4 posi = matrix * vec4(pos, 1.0);
+				gl_Position = posi;
+				v_color = a_color;
+				v_uv = a_uv;
+			}
+		</script>
+		<script id="fs" type="shader.fragment">
+			precision mediump float;
+			
+			uniform sampler2D texturam;
+			uniform sampler2D textura;
+			
+			varying vec3 v_color;
+			varying vec2 v_uv;
+			void main(){
+				vec4 frag_tex = texture2D(textura, v_uv)*texture2D(texturam, v_uv);
+				gl_FragColor = frag_tex;//vec4(v_color, 1.0);
+			}
+		</script>
+		<img src="image/textura.png" id="textura"></img>
+		<img src="image/textura2.png" id="textura2"></img>
+	</body>
+	<header>
+		<script src="js/multiply-graphic.js"></script>
+		<script src="js/multiply-matrix.js"></script>
+		<script src="js/test.js"></script>
+	</header>
+<html>
