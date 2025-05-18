@@ -46,7 +46,7 @@ function Point(x=0, y=0, vx=0, vy=0, mass=1, pinned=false){
 	}
 	
 	self.draw = function(){
-		drawCircle("blue", self.pos.x*g_scl, self.pos.y*g_scl, 2*g_scl);
+		drawCircle(self.pinned? "red": "blue", self.pos.x*g_scl, self.pos.y*g_scl, 2*g_scl);
 	}
 }
 
@@ -99,7 +99,7 @@ const points = [
 
 for(var y=10; y<=250; y+=10){
 	for(var x=10; x<=490; x+=10){
-		points.push(new Point(x, y, 0, 0, 4, x==10||x==490));
+		points.push(new Point(x, y, 0, 0, 4, y==10/*x==10||x==490*/));
 	}
 }
 
@@ -125,33 +125,31 @@ App.start = function(){
 }
 
 App.update = function(dt){
+	dt *= 5;
 	clearScreen();
 	
 	//g_acc.x = 700+Math.random()*500;
-	
-	/* Updates the points on screen */
-	for(var i=0; i<points.length; i++){
-		points[i].update(dt);
-		
-		if(points[i]==actual){
-			points[i].pos.x = pos[0];
-			points[i].pos.y = pos[1];
+	for (var it=0; it<10; it++){
+		/* Updates the points on screen */
+		for(var i=0; i<points.length; i++){
+			points[i].update(dt/10);
 		}
-	}
-	
-	/* Updates the lines on screen */
-	for(var i=0; i<lines.length; i++){
-		lines[i].update(dt);
-	}
-	
-	/* Apply constraints to the points on screen */
-	for(var i=0; i<points.length; i++){
-		points[i].constraint();
-	}
-	
-	/* Renders all the points on screen */
-	for(var i=0; i<points.length; i++){
-		points[i].draw();
+		
+		/* Updates the lines on screen */
+		for(var i=0; i<lines.length; i++){
+			lines[i].update(dt/10);
+		}
+		
+		/* Apply constraints to the points on screen */
+		for(var i=0; i<points.length; i++){
+			points[i].constraint();
+		}
+		
+		// Update selected point
+		if (actual){
+			actual.pos.x = pos[0];
+			actual.pos.y = pos[1];
+		}
 	}
 	
 	/* Renders all the lines on screen */
@@ -159,6 +157,10 @@ App.update = function(dt){
 		lines[i].draw();
 	}
 	
+	/* Renders all the points on screen */
+	for(var i=0; i<points.length; i++){
+		points[i].draw();
+	}
 }
 
 function removePoint(p){
@@ -179,6 +181,14 @@ function removePoint(p){
 window.onkeydown = function(ev){
 	if(ev.key=="Escape"){
 		App.running = false;
+	}
+	if (actual){
+		if(ev.key=="f"){
+			actual.pinned = true;
+		}
+		if(ev.key=="j"){
+			actual.pinned = false;
+		}
 	}
 }
 
